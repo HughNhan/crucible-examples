@@ -1,3 +1,4 @@
 [
-  { "tool": "procstat" }
+  { "tool": "procstat" },
+  { "tool": "sysstat" }
 ]
