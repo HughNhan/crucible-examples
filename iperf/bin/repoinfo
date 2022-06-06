@@ -1,0 +1,21 @@
+#/bin/bash
+
+REPOS=$(ls)
+echo $REPOS
+dirty=""
+for repo in $REPOS
+do
+    pushd  $repo > /dev/null
+    git status 2>&1 > /tmp/.out
+
+    dirty=$(cat /tmp/.out | grep "working tree clean")
+    #echo "dirty:" $dirty
+
+    if [[ -z "$dirty" ]]; then
+        echo -n "##### " ; 'pwd'
+        cat /tmp/.out
+        dirty=""
+    fi
+
+    popd > /dev/null
+done 

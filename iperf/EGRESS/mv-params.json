@@ -1,0 +1,30 @@
+{
+  "global-options": [
+    {
+      "name": "common-params",
+      "params": [
+        { "arg": "time", "vals": ["10"] },
+        { "arg": "ifname", "vals": ["ens8f0"], "role": "server" }
+      ]
+    }
+  ],
+  "sets": [
+    {
+      "include": "common-params",
+      "params": [
+        { "arg": "length", "vals": [ "16K"] },
+        { "arg": "protocol", "vals": ["tcp"] }
+      ]
+    },
+    {
+      "include": "common-params",
+      "params": [
+        { "arg": "protocol", "vals": ["udp"] },
+        { "arg": "length", "vals": [ "1K","16K"] },
+        { "arg": "bitrate", "vals": ["1G"], "role": "client" }
+      ]
+    }
+  ]
+}
+
+

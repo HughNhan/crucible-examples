@@ -1,0 +1,36 @@
+#!/bin/bash
+
+#
+# Assumptions:
+#   1. uperf run.sh will produce multiple runs by the "scale_up_factor" functionality
+#
+# At a current dirrectory, we have
+# /home/hnhan/old-crucible-examples/crucible-examples/uperf/TCP/COLOCATE
+# network.json                   README.md      run.log       run-perf8.sh*            uperf-mv-params.json
+# nodeSelector-perf8-sno-0.json  resource.json  nodes.json    run-4.9-ovnk-2021-11-27-05:02:26/   
+#
+#  1. Invoke run-perf8.sh
+#  2. move the results to under run-4.9-ovnk-2021-11-27-05:02:26/
+#  3. Invoke genit: iterate over each run and invoke gensum
+#  4. gensum produces:
+#        show-summary-uperf--2021-11-27_05:02:31--b50b3953-2aa8-4b31-b22b-2fd49254cfcb.txt
+#        summary-uperf--2021-11-27_05:02:31--b50b3953-2aa8-4b31-b22b-2fd49254cfcb.txt
+#  5. Tar it
+#
+
+DIR="run-4.9-ovnk-$(date "+%Y-%m-%d-%T")"
+echo $DIR
+if [ ! -d  $DIR ]; then
+    mkdir $DIR
+fi
+echo "working dir" $(pwd)
+crucible es init
+bash run-perf8.sh 2>&1 | tee $DIR.log
+
+# uperf can have multiple runs from one run.sh pass
+mv /var/lib/crucible/run/uperf* $DIR/
+#mv /var/lib/crucible/run/flexran* $DIR/
+pushd $DIR
+genit
+tarit
+popd

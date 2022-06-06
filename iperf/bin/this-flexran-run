@@ -1,0 +1,34 @@
+#!/bin/bash
+
+source /home/hnhan/bin/functions.sh
+#
+#  1. Invoke run.sh
+#  2. move the results to under label i.e run-flexran-2021-11-27-05:02:26/
+#  3. Invoke genit: iterate over each run and invoke gensum
+#  4. gensum produces:
+#        show-summary-flexran--2021-11-27_05:02:31--b50b3953-2aa8-4b31-b22b-2fd49254cfcb.txt
+#        summary-flexran--2021-11-27_05:02:31--b50b3953-2aa8-4b31-b22b-2fd49254cfcb.txt
+#  5. Tar it
+#
+
+if [ -f ./thislabel ]; then
+    source ./thislabel
+else
+    LABEL="xran"
+fi
+
+DIR="run-${LABEL}-$(date "+%Y-%m-%d-%T")"
+echo $DIR
+if [ ! -d  $DIR ]; then
+    mkdir $DIR
+fi
+
+echo "working dir" $(pwd)
+#crucible es init
+bash run.sh 2>&1 | tee $DIR.log
+result_path=$(realpath /var/lib/crucible/run/latest)
+mv $result_path $DIR/
+pushd $DIR
+gen-flexran-it
+tar-flexran-it
+popd
