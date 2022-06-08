@@ -4,7 +4,7 @@
 
 # Variables which apply to all test environments
 ################################################
-topo="intranode" # internode = client/server pods on different nodes in ocp/k8s cluster
+topo="internode" # internode = client/server pods on different nodes in ocp/k8s cluster
                  # intranode = client/server pods on same worker node in ocp/k8s cluster
                  # ingress = client outside (BML host or VM), server inside ocp/k8s cluster
                  # interhost = between two BML hosts/VMs, not k8s/ocp
@@ -19,20 +19,21 @@ scale_up_factor="1" # Number of client-server pairs per host/node/node-pair
 interhost_dir=forward # forward, reverse, bidirec
 samples=1 # Ideally use at least 3 samples for each benchmark iteration.
 max_failures=1 # After this many failed samples the run will quit
-other_tags=",ovnk:sams" # Comma-separated list of something=value, these help you identify this run as different
+other_tags=",cni:ovnk,test:sams" # Comma-separated list of something=value, these help you identify this run as different
             #  from other runs, for example:  "cloud-reservation:48,HT:off,CVE:off"
             # Note that many tags are auto-generated below
-mv_params_files=("mv-params.json") # All benchmark-iterations are built from this file
+mv_params_files=("mv-params-sams.json") # All benchmark-iterations are built from this file
 
 # Variables for ocp/k8s environments
 ####################################
-num_cpus=24  # A few fewer than the number of *Allocatable* cpus on each of the workers.
+num_cpus=60  # A few fewer than the number of *Allocatable* cpus on each of the workers.
              # as reported by oc describe node/node-name
              # This affects cpu request (and limit for static qos)
              # TODO: this should be automatically calculated.
 pod_qos=burstable # static = guaranteed pod, burstable = default pos qos
-ocphost=perf176b.perf.lab.eng.bos.redhat.com # must be able to ssh without password prompt
-k8susr=root # Might be "root" or "kni" for some installations
+#ocphost=e24-h05-000-r640.rdu2.scalelab.redhat.com # must be able to ssh without password prompt
+ocphost=f33-h17-000-r640.rdu2.scalelab.redhat.com
+k8susr=kni # Might be "root" or "kni" for some installations
 # Use for SRIOV or comment out for default network
 #annotations="`/bin/pwd`/annotations.json" # Use for SRIOV or comment out for default network
                                            # Must populate this file with correct annotation
@@ -46,7 +47,7 @@ irq="bal" # bal by default or rrHost or <something-else> depending on what manua
 # Variables if one or more remotehost
 # endpoints are used (topo=ingress|egress|interhost)
 #####################################
-bmlhosta=perf176b.perf.lab.eng.bos.redhat.com # Used for topo=ingress|egress|interhost
+bmlhosta=e24-h05-000-r640.rdu2.scalelab.redhat.com # Used for topo=ingress|egress|interhost
 bmlhostb=hostb # Used for interhost
 
 
@@ -112,7 +113,7 @@ for params_file in ${mv_params_files[@]}; do
  for num_pods in $scale_up_factor; do
     num_clients=`echo "$num_pods * $scale_out_factor" | bc`
     num_servers=$num_clients
-    num_cpus=8  # A few fewer than the number of *Allocatable* cpus on each of the workers.
+    num_cpus=60  # A few fewer than the number of *Allocatable* cpus on each of the workers.
     if [ "$topo" != "interhost" ]; then # Any test involving ocp/k8s
         ssh $k8susr@$ocphost "kubectl get nodes -o json" >nodes.json
         ## NOTE THIS IS REVERSED
@@ -181,6 +182,9 @@ for params_file in ${mv_params_files[@]}; do
                 node_selector=`echo $node_selector | sed -e s/^,//`
             done
         endpoint_opt="--endpoint k8s,user:$k8susr,host:$ocphost"
+        #HN add
+        endpoint_opt+=",hostNetwork:1"
+        #HN /add
         endpoint_opt+=",${node_selector}"
         endpoint_opt+=",userenv:$userenv"
         endpoint_opt+=",resources:default:$resource_file"
