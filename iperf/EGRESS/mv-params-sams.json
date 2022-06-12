@@ -3,7 +3,7 @@
     {
       "name": "common-params",
       "params": [
-        { "arg": "ifname", "vals": ["ens8f0"], "role": "server" }
+        { "arg": "ifname", "vals": ["ens2f0"], "role": "server" }
       ]
     }
   ],

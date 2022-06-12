@@ -46,8 +46,8 @@ irq="bal" # bal by default or rrHost or <something-else> depending on what manua
 # Variables if one or more remotehost
 # endpoints are used (topo=ingress|egress|interhost)
 #####################################
-bmlhosta=perf176b.perf.lab.eng.bos.redhat.com # Used for topo=ingress|egress|interhost
-bmlhostb=perf176d.perf.lab.eng.bos.redhat.com # Used for interhost (rickshaw-server)
+bmlhosta=f32-h03-000-r640.rdu2.scalelab.redhat.com # Used for topo=ingress|egress|interhost
+bmlhostb=f34-h02-000-r640.rdu2.scalelab.redhat.com # Used for interhost (rickshaw-server)
 
 
 resource_file="`/bin/pwd`/resource.json"

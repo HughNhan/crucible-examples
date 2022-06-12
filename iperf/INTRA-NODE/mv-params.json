@@ -3,8 +3,7 @@
     {
       "name": "common-params",
       "params": [
-        { "arg": "time", "vals": ["10"] },
-        { "arg": "length", "vals": [ "16K"] },
+        { "arg": "time", "vals": ["30"] },
         { "arg": "ifname", "vals": ["eth0"], "role": "server" }
       ]
     }
@@ -13,21 +12,23 @@
     {
       "include": "common-params",
       "params": [
+        { "arg": "length", "vals": [ "16K", "32K"] },
         { "arg": "protocol", "vals": ["tcp"] }
       ]
     },
     {
       "include": "common-params",
       "params": [
-        { "arg": "protocol", "vals": ["tcp"] },
-        { "arg": "passthru", "vals": ["--reverse"], "role": "client" }
+        { "arg": "protocol", "vals": ["udp"] },
+        { "arg": "length", "vals": [ "1K","4K", "16K", "32K"] },
+        { "arg": "bitrate", "vals": ["5G", "10K", "0"], "role": "client" }
       ]
     },
     {
       "include": "common-params",
       "params": [
         { "arg": "protocol", "vals": ["udp"] },
-        { "arg": "bitrate", "vals": ["5G", "10G", "0"], "role": "client" }
+        { "arg": "passthru", "vals": ["-V,-fm,-b2000m,-l256,-i1,-t60"], "role": "client" }
       ]
     }
   ]

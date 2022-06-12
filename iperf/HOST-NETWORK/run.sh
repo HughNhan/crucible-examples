@@ -22,7 +22,7 @@ max_failures=1 # After this many failed samples the run will quit
 other_tags=",cni:ovnk,test:sams" # Comma-separated list of something=value, these help you identify this run as different
             #  from other runs, for example:  "cloud-reservation:48,HT:off,CVE:off"
             # Note that many tags are auto-generated below
-mv_params_files=("mv-params-sams.json") # All benchmark-iterations are built from this file
+mv_params_files=("mv-params.json") # All benchmark-iterations are built from this file
 
 # Variables for ocp/k8s environments
 ####################################
@@ -31,8 +31,8 @@ num_cpus=60  # A few fewer than the number of *Allocatable* cpus on each of the 
              # This affects cpu request (and limit for static qos)
              # TODO: this should be automatically calculated.
 pod_qos=burstable # static = guaranteed pod, burstable = default pos qos
-#ocphost=e24-h05-000-r640.rdu2.scalelab.redhat.com # must be able to ssh without password prompt
-ocphost=f33-h17-000-r640.rdu2.scalelab.redhat.com
+ocphost=e24-h05-000-r640.rdu2.scalelab.redhat.com # must be able to ssh without password prompt
+#ocphost=f33-h17-000-r640.rdu2.scalelab.redhat.com
 k8susr=kni # Might be "root" or "kni" for some installations
 # Use for SRIOV or comment out for default network
 #annotations="`/bin/pwd`/annotations.json" # Use for SRIOV or comment out for default network

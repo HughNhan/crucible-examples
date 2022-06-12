@@ -1,6 +1,6 @@
 # Configure HOST-NETWORK
  - run.sh: "topo=internode"
- - mv-params.json: server ifname is "eth0"
+ - mv-params.json: server ifname is "br-ex"  - HN: may need to fix k8s to send pod IP in endpoint-start-1, server-start-end:1
 
 	{
 	  "global-options": [

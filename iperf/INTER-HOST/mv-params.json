@@ -3,8 +3,8 @@
     {
       "name": "common-params",
       "params": [
-        { "arg": "time", "vals": ["10"] },
-        { "arg": "ifname", "vals": ["eno2"], "role": "server" }
+        { "arg": "time", "vals": ["30"] },
+        { "arg": "ifname", "vals": ["ens2f1"], "role": "server" }
       ]
     }
   ],
@@ -12,7 +12,7 @@
     {
       "include": "common-params",
       "params": [
-        { "arg": "length", "vals": [ "16K"] },
+        { "arg": "length", "vals": [ "16K", "32K"] },
         { "arg": "protocol", "vals": ["tcp"] }
       ]
     },
@@ -20,8 +20,15 @@
       "include": "common-params",
       "params": [
         { "arg": "protocol", "vals": ["udp"] },
-        { "arg": "length", "vals": [ "1K","4K","8K","16K"] },
-        { "arg": "bitrate", "vals": ["1G"], "role": "client" }
+        { "arg": "length", "vals": [ "1K","4K", "16K", "32K"] },
+        { "arg": "bitrate", "vals": ["5G", "10K", "0"], "role": "client" }
+      ]
+    },
+    {
+      "include": "common-params",
+      "params": [
+        { "arg": "protocol", "vals": ["udp"] },
+        { "arg": "passthru", "vals": ["-V,-fm,-b2000m,-l256,-i1,-t60"], "role": "client" }
       ]
     }
   ]
