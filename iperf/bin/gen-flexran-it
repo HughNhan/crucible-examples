@@ -1,9 +1,0 @@
-#!/bin/bash
-RUNS="$(/bin/ls -p | grep / | grep ^flexran )"
-
-for run in $RUNS
-do
-    #remove trailing /
-    name=${run::-1}
-    gen-flexran-sum $name
-done

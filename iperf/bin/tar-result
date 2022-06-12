@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Only process uper* dir, not uperf*.tgt 
-RUNS="$(/bin/ls -p | grep / | grep uperf )"
+# Usage: this_cmd [TAG i.e flexran | uperf | iperf]
+
+RUNS="$(/bin/ls -p | grep / | grep $1 )"
 
 # "ls -p" shows dir entries ended with /
 

@@ -1,4 +1,12 @@
 #!/bin/bash
+#
+# Show tag, param and "primary period-id" context from standard crucible result summary
+#
+# usage: show [-r] RUN-ID
+#   -r get fresh result from "crucible get result"
+#   no -r, results are ready at current rundir.
+#
+#
 while getopts "h:r" arg; do
   case $arg in
     h)

@@ -1,9 +1,0 @@
-#!/bin/bash
-RUNS="$(/bin/ls -p | grep / | grep ^uperf )"
-
-for run in $RUNS
-do
-    #remove trailing /
-    name=${run::-1}
-    gensum $name
-done
