@@ -1,23 +1,36 @@
 #!/bin/bash
 
-# Usage: this-any-run [BENCH i.e flexran iperf uperf]
-
-source /home/hnhan/bin/functions.sh
-#
+# Usage: this-any-run [-l LABEL]
+# Ex: this-run-any -l DRY-RUN
 #  1. Invoke run.sh
 #  2. move the results to under label i.e run-BENCH-2021-11-27-05:02:26/
 #  3. Invoke genit: iterate over each run and invoke gensum
 #  4. gensum produces:
-#        show-summary-BENCH--2021-11-27_05:02:31--b50b3953-2aa8-4b31-b22b-2fd49254cfcb.txt
-#        summary-BENCH--2021-11-27_05:02:31--b50b3953-2aa8-4b31-b22b-2fd49254cfcb.txt
+#        show-summary-DRY-RUN--2021-11-27_05:02:31--b50b3953-2aa8-4b31-b22b-2fd49254cfcb.txt
+#        summary-DRY-RUN--2021-11-27_05:02:31--b50b3953-2aa8-4b31-b22b-2fd49254cfcb.txt
 #  5. Tar it
 #
 
+source /home/hnhan/bin/functions.sh
+
 if [ -f ./thislabel ]; then
     LABEL=$(cat ./thislabel)
-else
-    LABEL=$1
 fi
+
+while getopts "l:" option; do
+    case "${option}" in
+        l) 
+            LABEL=${OPTARG}
+            ;;
+        :)
+            echo "Error: -${OPTARG} requires an argument."
+            exit
+            ;;
+        *)  # If unknown (any other) option:
+            exit
+            ;;
+    esac
+done
 
 DIR="run-${LABEL}-$(date "+%Y-%m-%d-%T")"
 echo $DIR
