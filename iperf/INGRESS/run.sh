@@ -19,7 +19,7 @@ scale_up_factor="1" # Number of client-server pairs per host/node/node-pair
 interhost_dir=forward # forward, reverse, bidirec
 samples=1 # Ideally use at least 3 samples for each benchmark iteration.
 max_failures=1 # After this many failed samples the run will quit
-other_tags=",cni=ovnk" # Comma-separated list of something=value, these help you identify this run as different
+other_tags=",cni:ovnk" # Comma-separated list of something=value, these help you identify this run as different
             #  from other runs, for example:  "cloud-reservation:48,HT:off,CVE:off"
             # Note that many tags are auto-generated below
 mv_params_files=("mv-params-sams.json") # All benchmark-iterations are built from this file
@@ -239,7 +239,7 @@ for params_file in ${mv_params_files[@]}; do
         tags+=",pod_qos:$pod_qos"
     fi
     if [ ! -z "$other_tags" ]; then
-        tags+="other_tags"
+        tags+="$other_tags"
     fi
     time crucible run iperf --tags $tags --mv-params $params_file --num-samples=$samples --max-sample-failures=$max_failures $endpoint_opt
     date

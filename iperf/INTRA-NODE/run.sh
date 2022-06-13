@@ -239,7 +239,7 @@ for params_file in ${mv_params_files[@]}; do
         tags+=",pod_qos:$pod_qos"
     fi
     if [ ! -z "$other_tags" ]; then
-        tags+=$other_tags
+        tags+="$other_tags"
     fi
     time crucible run iperf --tags $tags --mv-params $params_file --num-samples=$samples --max-sample-failures=$max_failures $endpoint_opt
     date

@@ -12,7 +12,7 @@
       "include": "common-params",
       "params": [
         { "arg": "protocol", "vals": ["udp"] },
-        { "arg": "passthru", "vals": ["-V,-fm,-b2000m,-l256,-i1,-t10"], "role": "client" }
+        { "arg": "passthru", "vals": ["-V,-fm,-b2000m,-l256,-i1,-t60"], "role": "client" }
       ]
     }
   ]

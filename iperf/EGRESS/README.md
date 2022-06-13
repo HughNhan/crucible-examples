@@ -1,6 +1,6 @@
 # Configure EGRESS
  - run.sh: "topo:egress", ocphost, bmlhosta
- - mv-params.json: fix ifname of server i.e. enf8f0
+ - mv-params.json: adjust server ifname  i.e. enf8f0. Make sure the remotehost FW/iptables do not block this traffic.
 
 	{
 	  "global-options": [

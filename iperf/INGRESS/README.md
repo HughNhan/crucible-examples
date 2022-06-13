@@ -1,6 +1,6 @@
 # Configure INGRESS
  - run.sh: "topo:ingress", ocphost, bmlhosta
- - mv-params.json: fix ifname of server: "eth0"
+ - mv-params.json: adjust ifname of server: "eth0". Also make sure the remotehost FW/iptables do not block this traffic.
 
 	{
 	  "global-options": [

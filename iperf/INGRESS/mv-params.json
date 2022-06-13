@@ -21,7 +21,7 @@
       "params": [
         { "arg": "protocol", "vals": ["udp"] },
         { "arg": "length", "vals": [ "1K","4K", "16K", "32K"] },
-        { "arg": "bitrate", "vals": ["5G", "10K", "0"], "role": "client" }
+        { "arg": "bitrate", "vals": ["5G", "10G", "0"], "role": "client" }
       ]
     },
     {
