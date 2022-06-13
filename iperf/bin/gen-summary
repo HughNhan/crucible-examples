@@ -31,15 +31,15 @@
 #    16.01
 #    ...
 #
+
 function f-gen-summ {
     exec 2> /dev/null
     #exec 1> summary-$1.txt
     
     rm summary-$1.txt
     exec > >(tee -ia summary-$1.txt)
-    
     show $1 | grep -e common -e unique -e tag -e mean -e "primary period" > show-summary-$1.txt
-    
+
     function CC {
       crucible get metric --source mpstat --type Busy-CPU --period $1 --breakout cstype=worker < dev/null
     }
@@ -64,7 +64,6 @@ function f-gen-summ {
     cpusum=0.0
     cpusum_div=0
     while IFS='' read -r  LinefromFile || [[ -n "${LinefromFile}" ]]; do
-    
         ((Counter++))
         #echo "Accessing line $Counter: ${LinefromFile}"
         if [[ "$LinefromFile" =~ "tags" ]]; then
@@ -104,11 +103,23 @@ function f-gen-summ {
     rm $tempfile
 }
 
-RUNS="$(/bin/ls -p | grep / | grep ^$1 )"
+# Discover bench prefix i.e iperf, uperf, flexran to know what blob to process. It will process "iperf--run-xxxxx"
+bench=""
+while read line; do
+    #echo $line
+    bench=$(echo $line |  awk '{if(/crucible.*run/) print $4}')
+    if [ "$bench" != "" ]; then
+        break
+    fi
+done < "../run.sh"
+
+RUNS="$(/bin/ls -p | grep / | grep ^$bench )"
 for run in $RUNS
 do
     #remove trailing /
     name=${run::-1}
     # generate summary
+    echo f-gen-summ $name
     f-gen-summ $name
 done
+

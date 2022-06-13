@@ -31,21 +31,22 @@ while getopts "l:" option; do
     esac
 done
 
-DIR="run-${LABEL}-$(date "+%Y-%m-%d-%T")"
+# HN DIR="run-${LABEL}-$(date "+%Y-%m-%d-%T")"
+DIR="run-std-00-2022-06-12-23:08:43"
 echo $DIR
 if [ ! -d  $DIR ]; then
     mkdir $DIR
 fi
 
 echo "working dir" $(pwd)
-#crucible es init
-bash run.sh 2>&1 | tee $DIR.log
-result_path=$(realpath /var/lib/crucible/run/latest)
-mv $result_path $DIR/
+# # crucible es init
+#bash run.sh 2>&1 | tee $DIR.log
+#result_path=$(realpath /var/lib/crucible/run/latest)
+#mv $result_path $DIR/
 pushd $DIR
 
-gen-summary $1
-tar-result $1
+gen-summary $DIR
+echo tar-result $DIR
 popd
 # EOF
 
