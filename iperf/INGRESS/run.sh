@@ -17,12 +17,12 @@ userenv=stream8 # can be centos7, centos8, stream, rhubi8, debian, opensuse
 osruntime=chroot # can be pod or kata for OCP (not yet verified for SRIOV), chroot for remotehost
 scale_up_factor="1" # Number of client-server pairs per host/node/node-pair
 interhost_dir=forward # forward, reverse, bidirec
-samples=1 # Ideally use at least 3 samples for each benchmark iteration.
+samples=3 # Ideally use at least 3 samples for each benchmark iteration.
 max_failures=1 # After this many failed samples the run will quit
 other_tags=",cni:ovnk" # Comma-separated list of something=value, these help you identify this run as different
             #  from other runs, for example:  "cloud-reservation:48,HT:off,CVE:off"
             # Note that many tags are auto-generated below
-mv_params_files=("mv-params-sams.json") # All benchmark-iterations are built from this file
+mv_params_files=("mv-params.json") # All benchmark-iterations are built from this file
 
 # Variables for ocp/k8s environments
 ####################################
@@ -46,7 +46,7 @@ irq="bal" # bal by default or rrHost or <something-else> depending on what manua
 # Variables if one or more remotehost
 # endpoints are used (topo=ingress|egress|interhost)
 #####################################
-bmlhosta=f34-h02-000-r640.rdu2.scalelab.redhat.com # Used for topo=ingress|egress|interhost
+bmlhosta=f34-h03-000-r640.rdu2.scalelab.redhat.com # Used for topo=ingress|egress|interhost
 bmlhostb=hostb # Used for interhost
 
 
