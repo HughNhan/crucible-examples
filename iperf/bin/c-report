@@ -1,13 +1,17 @@
 #!/bin/bash
+#
+# Report summary of a daily run
+# Usage: c-report [--tag <TAG>]
+# Ex:    c-report --tag run-sat
+#
+#
 
 JOBS="INTER-HOST HOST-NETWORK-INTRA HOST-NETWORK INTRA-NODE INTER-NODE INGRESS EGRESS"
-
 
 function batch_summary {
   for job in $JOBS;do
     echo TOPO: $job
-    pushd $job
-    #LABEL=$(cat thislabel)
+    pushd $job > /dev/null
     LABEL=$1
     FILES=$(ls *$LABEL*.log)
     #echo $FILES
@@ -15,13 +19,13 @@ function batch_summary {
        echo "$(realpath $file):----"
        cat $file | grep 'run-id\|tags:\|common\|unique\|result:'
     done
-    popd
+    popd > /dev/null
   done
 }
 
-sum=0
-run=0
-longopts="sum,run"
+TAG="run-tues-"
+longopts="tag:,help"
+
 opts=$(getopt -q -o "" --longoptions "$longopts" -n "getopt.sh" -- "$@");
 if [ $? -ne 0 ]; then
     echo "Unrecognized option specified"
@@ -31,13 +35,15 @@ eval set -- "$opts";
 echo "opts after: $@"
 while true; do
     case "$1" in
-        --sum)
+        --tag)
             shift;
-            sum=1
+            TAG=$1
+            shift;
             ;;
-        --run)
+        --help)
             shift;
-            run=1
+            echo $0 "[--tag <tag_string>]"
+            exit
             ;;
         --)
             shift;
@@ -49,7 +55,6 @@ while true; do
     esac
 done
 
-TAG="tues"
 echo batch_summary $TAG
 batch_summary $TAG
 

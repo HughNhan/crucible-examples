@@ -1,6 +1,9 @@
 #!/bin/bash
 #
 # At the current rundir, generate summary for each (result) dir with "run-$TAG" prefix
+# Usage: gen-summary
+# Ex: $ cd INGRESS/run-foo-2022-06-19-10:30:27
+#     $ gen-summary
 #
 
 #
@@ -32,12 +35,77 @@
 #    ...
 #
 
+# iperf_metricx="rx-Gbits/sec rx-lost/sec rx-pps tx-Mbits/sec"
+iperf_metrics="rx-Gbits/sec rx-lost/sec rx-pps tx-Mbits/sec"
+# mpstat_metrics="Busy-CPU NonBusy-CPU"
+mpstat_metrics="Busy-CPU NonBusy-CPU"
+
+any_cpusum=0
+any_cpusum_div=0
+function any_cpu_accum {
+    cpuline=""
+    cpuline=$(crucible get metric --source mpstat --type Busy-CPU --period $1 --breakout cstype=worker < /dev/null | grep "value\"")
+    #if [ $(echo $cpuline | awk -F ':' '{print NF}') < 2 ]; then
+    if [ "$cpuline" == ""  ]; then
+        # combined of cstype client and server
+        cpuline=$(crucible get metric --source mpstat --type Busy-CPU --period $1  < /dev/null | grep "value\"")
+    fi
+    # TBD: above --breakout cstype=worker limits us to pod ONLY
+    #echo "HN period : ${PP}"
+    echo "cpuline:" $cpuline
+    cpu=$(echo $cpuline | awk -F ':' '{print $2}')
+    val=$(echo "$cpu" | bc)
+    any_cpusum=$(echo "$any_cpusum + $val" | bc)
+    ((any_cpusum_div++))
+}
+
+function any_cpu_close {
+    echo -n "worker CPU mean: "
+    echo "scale=3;$any_cpusum/$any_cpusum_div" | bc
+    echo ""
+    any_cpusum=0
+    any_cpusum_div=0
+}
+
+
+iperf_loss_accum=0
+iperf_loss_div=0
+function iperf_loss_accum {
+    #echo pp=$1
+    loss_line=$(crucible get metric --source iperf --type rx-lost/sec --period $1  < /dev/null | grep "value\"")
+    #echo "HN period : ${PP}"
+    echo "loss_line:" $loss_line
+    val=$(echo $loss_line | awk -F ':' '{print $2}')
+    # if exp notation, connvert it
+    if [[ "$val" == *"e"* ]]; then
+        # strip double quote from val
+        val=$(eval echo $val)
+        val=$(echo $val | awk '{printf("%d\n",$0)}')
+        #echo converted_loss= $val
+    else
+        val=$(eval echo $val)
+    fi
+
+    iperf_loss_accum=$(echo "$iperf_loss_accum + $val" | bc)
+    ((iperf_loss_div++))
+}
+
+function iperf_loss_close {
+
+    echo -n "rx-lost/sec mean: " ; echo "$iperf_loss_accum/$iperf_loss_div" | bc
+    echo ""
+    iperf_loss_accum="0"
+    iperf_loss_div=0
+}
+
+
 function f-gen-summ {
     exec 2> /dev/null
-    #exec 1> summary-$1.txt
     
     rm summary-$1.txt
     exec > >(tee -ia summary-$1.txt)
+
+    # reduce ./run/result-summary.txt 
     show $1 | grep -e common -e unique -e tag -e mean -e "primary period" > show-summary-$1.txt
 
     function CC {
@@ -45,47 +113,70 @@ function f-gen-summ {
     }
     
     function show-perf {
-         grep -v "CPU" $1 |  grep -oP '(?<=mean: )[^ ]*'
+         #grep -v "CPU" $1 |  grep -oP '(?<=mean: )[^ ]*'
+         grep -e "result:" $1 |  grep -oP '(?<=mean: )[^ ]*'
+         echo ""
     }
     
     function show-cpu {
          grep -e "CPU" $1 |  grep -oP '(?<=mean: )[^ ]*'
+         echo ""
     }
     
+    function show-rx-lost {
+         grep -e "rx-lost" $1 |  grep -oP '(?<=mean: )[^ ]*'
+    }
     function show-all {
         cat $1
-        echo "----"
+        echo "-- TPUT --"
         show-perf $1
-        echo "----"
+        echo "-- CPU --"
         show-cpu $1
+        echo "-- rx-lost --"
+        show-rx-lost $1
     }
     
+
+    # For multiple samples of  non-primary metric i.e CPU, we need to compute mean.
+    # iteration-id: F7F38836-EEDC-11EC-A989-C001F56639B4
+    #    unique params: passthru=-V,-fm,-b2000m,-l256,-i1,-t60 protocol=udp
+    #    primary-period name: measurement
+    #    samples:
+    #      sample-id: F7F8343A-EEDC-11EC-8B4B-C001F56639B4
+    #        primary period-id: F7F9122E-EEDC-11EC-BA2F-C001F56639B4
+    #        period range: begin: 1655538785134 end: 1655538845133
+    #      sample-id: F7FD2D64-EEDC-11EC-B176-C001F56639B4
+    #        primary period-id: F7FDDF02-EEDC-11EC-A89F-C001F56639B4
+    #        period range: begin: 1655538942527 end: 1655539002526
+    #      sample-id: F803E910-EEDC-11EC-988C-C001F56639B4
+    #        primary period-id: F804DFDC-EEDC-11EC-988C-C001F56639B4
+    #        period range: begin: 1655539099927 end: 1655539159926
+    #      result: (rx-Gbits/sec) samples: 0.38 0.24 0.24 mean: 0.29 min: 0.24 max: 0.38 stddev: 0.08 stddevpct: 27.56
+
     Counter=0
     cpusum=0.0
     cpusum_div=0
     while IFS='' read -r  LinefromFile || [[ -n "${LinefromFile}" ]]; do
         ((Counter++))
         #echo "Accessing line $Counter: ${LinefromFile}"
-        if [[ "$LinefromFile" =~ "tags" ]]; then
+        if [[ "$LinefromFile" =~ "tags" || "$LinefromFile" =~ "unique" ]]; then
             echo "${LinefromFile}"
         fi
+
+        # When seeing line "primary period-id: FF1FE266-EFDC-11EC-B247-A157F86639B4", start new submetric mean computation.
         if [[ "$LinefromFile" =~ .*"primary".* ]]; then
             #echo "HN primary line: ${LinefromFile}"
-            PP=$(echo $LinefromFile | awk -F ':' '{print $2}')
-            cpuline=$(crucible get metric --source mpstat --type Busy-CPU --period $PP --breakout cstype=worker < /dev/null | grep "value\"")
-            #echo "HN period : ${PP}"
-            echo "cpuline:" $cpuline
-            cpu=$(echo $cpuline | awk -F ':' '{print $2}')
-            val=$(echo "$cpu" | bc)
-            cpusum=$(echo "$cpusum + $val" | bc)
-            ((cpusum_div++))
+            pp=$(echo $LinefromFile | awk -F ':' '{print $2}')
+            any_cpu_accum $pp
+            iperf_loss_accum $pp
         fi
     
+        # When seing line "result: (rx-Gbits/sec) samples: 0.26 mean: 0.26 min: 0.26 max: 0.26 stddev: NaN stddevpct: NaN",
+        # close out the current mean computation.
         if [[ "$LinefromFile" =~ .*"mean".* ]]; then
             echo "${LinefromFile}"
-            echo -n "worker CPU mean: "
-            echo "scale=2;$cpusum/$cpusum_div" | bc
-            cpusum=0.0; cpusum_div=0
+            any_cpu_close
+            iperf_loss_close
         fi
     
     done < show-summary-$1.txt
@@ -114,6 +205,8 @@ while read line; do
 done < "../run.sh"
 
 RUNS="$(/bin/ls -p | grep / | grep ^$bench )"
+# all dirs with matching prefix ii.e  iperf--2022-06-19_14:30:29_UTC--09f2d1fd-7695-46e9-88f8-bbf877fa7ce4/
+# Should be one match. Multiple matches is confusing, but that is under the users control.
 for run in $RUNS
 do
     #remove trailing /

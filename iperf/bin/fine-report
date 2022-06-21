@@ -1,0 +1,111 @@
+#!/bin/bash
+
+#
+# Report specific tags
+# Usage: fine-report --uniqus <> --tag <tag>
+# Example: fine-report --unique '-V,-fm,-b2000m,-l256,-i1,-t60'  --tag sat
+#
+
+JOBS="INTER-HOST HOST-NETWORK-INTRA HOST-NETWORK INTRA-NODE INTER-NODE INGRESS EGRESS"
+#JOBS="INTER-HOST"
+
+uniq_tag=""
+
+function match_entries {
+    match=0;
+    while IFS='' read -r Line || [[ -n "${Line}" ]]; do
+        if [ $match == 1 ]; then
+            # Inside a match entry, print until the next entry
+            if grep -q "iteration-id:" <<<  "${Line}"; then
+                # hit the next entry, must be the end of the last entry.
+                # we never have back to back matched entry.
+                match=0
+                continue
+            fi
+            if grep -q 'result:' <<<  "${Line}"; then
+                echo "$Line"
+                continue;
+            fi
+            continue
+        fi
+        if grep -q -F -e "$uniq_tag" <<<  "${Line}"; then
+            # find a match entries
+            echo "$Line"
+            match=1
+        fi
+    done < $1
+}
+
+
+function batch_summary {
+  for job in $JOBS;do
+    echo TOPO: $job
+    pushd $job > /dev/null
+    #LABEL=$(cat thislabel)
+    LABEL=$1
+    FILES=$(ls *$LABEL*.log)
+    #echo $FILES
+    for file in $FILES; do
+       if [ "$uniq_tag" == "" ]; then
+         echo "$(realpath $file):----"
+         cat $file | grep 'run-id\|tags:\|common\|unique\|result:'
+
+       else
+            match_entries $file
+       fi
+    done
+    popd > /dev/null
+  done
+}
+
+#
+#  unique params: length=16K protocol=tcp 
+#     result: (rx-Gbits/sec) samples: 20.83 20.85 21.55 mean: 21.08 min: 20.83 max: 21.55 stddev: 0.41 stddevpct: 1.95
+#
+
+sum=0
+run=0
+longopts="unique:,tag:,help"
+opts=$(getopt -q -o "" --longoptions "$longopts" -n "getopt.sh" -- "$@");
+if [ $? -ne 0 ]; then
+    echo "Unrecognized option specified"
+    exit
+fi
+
+TAG="run-tues"
+eval set -- "$opts";
+echo "opts after: $@"
+while true; do
+    case "$1" in
+        --unique)
+            shift;
+            uniq_tag=$1
+            echo got uniq=$uniq_tag
+            shift;
+            ;;
+        --tag)
+            shift;
+            TAG=$1
+            echo got tag=$TAG
+            shift;
+            ;;
+        --)
+            shift;
+            break
+            ;;
+        --help)
+            shift;
+            echo $0 "[--tag <tag_string>] [--unique <unique-test-params-desc>]"
+            exit
+            ;;
+        *)
+            echo "Invalid option: $1"
+            exit
+    esac
+done
+
+echo "TAG=$TAG"
+
+echo batch_summary "$TAG"
+batch_summary "$TAG"
+
