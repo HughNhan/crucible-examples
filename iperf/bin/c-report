@@ -8,9 +8,14 @@
 
 JOBS="INTER-HOST HOST-NETWORK-INTRA HOST-NETWORK INTRA-NODE INTER-NODE INGRESS EGRESS"
 
+LABEL=""
 function batch_summary {
   for job in $JOBS;do
     echo TOPO: $job
+    if [ ! -d $job ]; then
+        echo "$job has no runs"
+        continue
+    fi
     pushd $job > /dev/null
     LABEL=$1
     FILES=$(ls *$LABEL*.log)
@@ -23,8 +28,7 @@ function batch_summary {
   done
 }
 
-TAG="run-tues-"
-longopts="tag:,help"
+longopts="label:,help"
 
 opts=$(getopt -q -o "" --longoptions "$longopts" -n "getopt.sh" -- "$@");
 if [ $? -ne 0 ]; then
@@ -35,14 +39,14 @@ eval set -- "$opts";
 echo "opts after: $@"
 while true; do
     case "$1" in
-        --tag)
+        --label)
             shift;
-            TAG=$1
+            LABEL=$1
             shift;
             ;;
         --help)
             shift;
-            echo $0 "[--tag <tag_string>]"
+            echo $0 "[--label <tag_string>]"
             exit
             ;;
         --)
@@ -55,6 +59,12 @@ while true; do
     esac
 done
 
-echo batch_summary $TAG
-batch_summary $TAG
+if [ "$LABEL" == "" ]; then
+    echo $0 "[--label <tag_string>]"
+    exit
+    
+fi
+
+echo batch_summary $LABEL
+batch_summary $LABEL
 

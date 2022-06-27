@@ -186,7 +186,7 @@ function f-gen-summ {
     tempfile=$(mktemp)
     #echo $tempfile
     cp summary-$1.txt $tempfile
-    show-all $tempfile >> summary-$1.txt
+    show-all $tempfile > summary-$1.txt
     
     # save sum and show files to run dir.
     cp show-summary-$1.txt $1/ ;  chmod -w  show-summary-$1.txt 

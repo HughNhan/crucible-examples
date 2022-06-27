@@ -6,7 +6,7 @@
 # Example: fine-report --unique '-V,-fm,-b2000m,-l256,-i1,-t60'  --tag sat
 #
 
-JOBS="INTER-HOST HOST-NETWORK-INTRA HOST-NETWORK INTRA-NODE INTER-NODE INGRESS EGRESS"
+JOBS="INTER-HOST HOST-NETWORK INTER-NODE INTRA-HOST HOST-NETWORK-INTRA INTRA-NODE INGRESS EGRESS"
 #JOBS="INTER-HOST"
 
 uniq_tag=""
@@ -40,6 +40,9 @@ function match_entries {
 function batch_summary {
   for job in $JOBS;do
     echo TOPO: $job
+    if [ ! -d $job ] ; then
+        continue
+    fi
     pushd $job > /dev/null
     #LABEL=$(cat thislabel)
     LABEL=$1
@@ -65,14 +68,14 @@ function batch_summary {
 
 sum=0
 run=0
-longopts="unique:,tag:,help"
+longopts="unique:,label:,help"
 opts=$(getopt -q -o "" --longoptions "$longopts" -n "getopt.sh" -- "$@");
 if [ $? -ne 0 ]; then
     echo "Unrecognized option specified"
     exit
 fi
 
-TAG="run-tues"
+LABEL=""
 eval set -- "$opts";
 echo "opts after: $@"
 while true; do
@@ -83,9 +86,9 @@ while true; do
             echo got uniq=$uniq_tag
             shift;
             ;;
-        --tag)
+        --label)
             shift;
-            TAG=$1
+            LABEL=$1
             echo got tag=$TAG
             shift;
             ;;
@@ -95,7 +98,7 @@ while true; do
             ;;
         --help)
             shift;
-            echo $0 "[--tag <tag_string>] [--unique <unique-test-params-desc>]"
+            echo $0 "[--label <tag_string>] [--unique <unique-test-params-desc>]"
             exit
             ;;
         *)
@@ -104,8 +107,14 @@ while true; do
     esac
 done
 
-echo "TAG=$TAG"
 
-echo batch_summary "$TAG"
-batch_summary "$TAG"
+if [ "$LABEL" == "" ]; then
+    echo $0 "[--label <tag_string>] [--unique <unique-test-params-desc>]"
+    exit
+fi
+
+echo "LABEL=$LABEL"
+
+echo batch_summary "$LABEL"
+batch_summary "$LABEL"
 
