@@ -1,0 +1,3 @@
+#!/bin/bash
+
+grep -e "Target Bitrate\|PASS\|FAIL" 

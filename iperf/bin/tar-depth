@@ -1,0 +1,57 @@
+#
+# tar-depth --label <>  --maxdepth <>
+#
+longopts="label:,depth:,help"
+opts=$(getopt -q -o "" --longoptions "$longopts" -n "getopt.sh" -- "$@");
+if [ $? -ne 0 ]; then
+    echo "Unrecognized option specified"
+    exit
+fi
+
+LABEL=""
+
+eval set -- "$opts";
+while true; do
+    case "$1" in
+        --label)
+            shift;
+            label=$1
+            shift;
+            ;;
+        --depth)
+            shift;
+            depth=$1
+            shift;
+            ;;
+        --)
+            shift;
+            break
+            ;;
+        --help)
+            shift;
+            echo $0 "[--label <tag_string>]  <--topo TOPO>"
+            exit
+            ;;
+        *)
+            echo "Invalid option: $1"
+            exit
+    esac
+done
+
+echo label=$label depth=$depth
+
+if [ "$label"  == "" ] || [ "$depth" == "" ]; then
+    echo $0 "[--label <src> --depth <n>"
+    exit
+fi
+
+for D in `find . -maxdepth $depth -type d`
+do
+    dir_name="$(basename $D)"
+    if [[ $dir_name  =~ "run-$label" ]]; then
+        pushd $D > /dev/null
+        pwd
+        tar-result iperf
+        popd > /dev/null
+    fi
+done

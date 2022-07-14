@@ -1,0 +1,92 @@
+#!/bin/bash
+#
+# Multi topologies run invocation or summary generation
+# Usage: sunday [--run] [--sum]  --label <>
+#
+# Prereq: set TAGS and JOBS
+#
+# Expansion to: run-$TAGS-DATE-TIME
+#               run-std-0-2022-06-13-22:36:4
+#
+
+JOBS="HOST-NETWORK HOST-NETWORK-INTRA INTER-NODE INTRA-NODE EGRESS INGRESS  INTER-HOST  INTRA-HOST"
+#JOBS="HOST-NETWORK"
+LABEL=""
+
+
+function batch_summary {
+  for job in $JOBS;do
+    echo $job
+    pushd $job
+    #LABEL=$(cat thislabel)
+    LABEL=$1
+    FILES=$(ls *$LABEL*.log)
+    #echo $FILES
+    for file in $FILES; do
+       echo "$(realpath $file):----"
+       #cat $file | grep 'run-id\|tags:\|common\|unique\|result:'
+       grep period-id  $file  | awk '{print $3}'
+       uuid=$(grep period-id  $file | awk '{print $3}')
+       crucible get metric --source mpstat --type Busy-CPU --breakout cstype,csid --period $uuid
+    done
+    popd
+  done
+}
+
+
+function f_help {
+    me=`basename "$0"` 
+    echo Usage: $me "<--run | --sum> <--label day-label>]"
+}
+
+sum=0
+run=0
+longopts="label:,sum,run"
+opts=$(getopt -q -o "" --longoptions "$longopts" -n "getopt.sh" -- "$@");
+if [ $? -ne 0 ]; then
+    echo "Unrecognized option specified"
+    exit
+fi
+eval set -- "$opts";
+echo "opts after: $@"
+while true; do
+    case "$1" in
+        --sum)
+            shift;
+            sum=1
+            ;;
+        --run)
+            shift;
+            run=1
+            ;;
+        --label)
+            shift;
+            LABEL=$1
+            shift;
+            ;;
+
+        --)
+            shift;
+            break
+            ;;
+        *)
+            echo "Invalid option: $1"
+            exit
+    esac
+done
+
+if [ "$LABEL" == "" ]; then
+    f_help
+    exit
+fi
+
+if [ $sum == 1 ]; then
+    echo batch_summary $LABEL
+    batch_summary $LABEL
+fi
+
+if [ $run == 1 ]; then
+    echo batch_run $LABEL
+    batch_run $LABEL
+fi
+

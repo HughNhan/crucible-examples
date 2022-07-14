@@ -1,0 +1,112 @@
+#!/bin/bash
+#
+# Usage: program --label <label-strinbg>  --topo <INTRA-NODE, INTER-NODE ...>
+# Example 1:
+#   1. cd to root of where all the results per topology are i.e ./INGRESS, EGRESS, INTRA-NODE, ...
+#   2. program --label sat-bfp  <==  this will dump a table of all run with  "run-sat-bpf*-DATE" blobs
+#
+# Example 2:
+#   1. cd to root of where all the results per topology are i.e ./INGRESS, EGRESS, INTRA-NODE, ...
+#   2. program --label sat-bfp  --topo INTRA-NODE  - this will dump only the INTRA-NODE column of the full table
+#
+
+longopts="label:,topo:,help"
+opts=$(getopt -q -o "" --longoptions "$longopts" -n "getopt.sh" -- "$@");
+if [ $? -ne 0 ]; then
+    echo "Unrecognized option specified"
+    exit
+fi
+
+LABEL=""
+eval set -- "$opts";
+while true; do
+    case "$1" in
+        --label)
+            shift;
+            LABEL=$1
+            shift;
+            ;;
+        --topo)
+            shift;
+            TOPO=$1
+            shift;
+            ;;
+        --)
+            shift;
+            break
+            ;;
+        --help)
+            shift;
+            echo $0 "[--label <tag_string>]  <--topo TOPO>"
+            exit
+            ;;
+        *)
+            echo "Invalid option: $1"
+            exit
+    esac
+done
+
+if [ "$LABEL" == "" ]; then
+    echo $0 "[--label <tag_string>]"
+    exit
+fi
+
+echo "LABEL=$LABEL"
+
+# gather all blobs that we want to dump. if there is --topo argument, do only 1 topology
+
+if [ "$TOPO" != "" ]; then
+    DIRS=$(find $TOPO -maxdepth 2  -name run-$LABEL\* | grep -v log )
+else
+    DIRS=$(find . -maxdepth 2  -name run-$LABEL\* | grep -v log )
+    #DIRS=$(find . -maxdepth 2  -name run-$LABEL\* | grep -v log | grep -v INGRESS)
+fi
+
+
+if [ "$DIRS" == "" ]; then
+    echo "No result found under current directory.  check argument"
+    exit
+fi
+
+
+# collect TOPO/run-tag-DATE/summary* file names
+FILES=""
+for dir in $DIRS; do
+    FILES+=$(ls $dir/summ*)
+    FILES+=" "
+done
+
+# Filter to keep only the interested sections TPUT, CPU, LOSS
+for file in $FILES; do
+    tmpfile="/tmp/$(basename $file)"
+    # taken lines from line with "TPUT" + 100 more lines
+    awk '/TPUT/{x=NR+100}(NR<=x){print}' $file > $tmpfile
+    TMPFILES+=$tmpfile
+    TMPFILES+=" "
+done
+
+
+# Print header
+if [ "$TOPO" != "" ]; then
+    echo -n $TOPO
+else
+    for dir in $DIRS; do
+        echo  $(dirname $dir) | awk -F '/' '{printf "%-8s", $2}'
+        echo -n  "  "
+    done
+fi
+echo ""
+# print all meaty files side-by-side
+pr -W90  -T -m $TMPFILES
+
+# collect params unique"
+for file in $FILES; do
+    # cut out "unique params"
+    grep "unique" $file | awk '{$1=""; $2=""; print $0;}' > /tmp/headers
+    break
+done
+
+echo ""
+echo "Footnote: test sequence was:"
+cat  /tmp/headers
+

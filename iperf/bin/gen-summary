@@ -35,6 +35,10 @@
 #    ...
 #
 
+function calc { 
+    awk "BEGIN{ printf \"%.2f\n\", $* }"; 
+}
+
 # iperf_metricx="rx-Gbits/sec rx-lost/sec rx-pps tx-Mbits/sec"
 iperf_metrics="rx-Gbits/sec rx-lost/sec rx-pps tx-Mbits/sec"
 # mpstat_metrics="Busy-CPU NonBusy-CPU"
@@ -55,13 +59,13 @@ function any_cpu_accum {
     echo "cpuline:" $cpuline
     cpu=$(echo $cpuline | awk -F ':' '{print $2}')
     val=$(echo "$cpu" | bc)
-    any_cpusum=$(echo "$any_cpusum + $val" | bc)
+    any_cpusum=$(calc $any_cpusum + $val)
     ((any_cpusum_div++))
 }
 
 function any_cpu_close {
     echo -n "worker CPU mean: "
-    echo "scale=3;$any_cpusum/$any_cpusum_div" | bc
+    calc $any_cpusum/$any_cpusum_div
     echo ""
     any_cpusum=0
     any_cpusum_div=0
@@ -86,13 +90,13 @@ function iperf_loss_accum {
         val=$(eval echo $val)
     fi
 
-    iperf_loss_accum=$(echo "$iperf_loss_accum + $val" | bc)
+    iperf_loss_accum=$(calc $iperf_loss_accum + $val)
     ((iperf_loss_div++))
 }
 
 function iperf_loss_close {
 
-    echo -n "rx-lost/sec mean: " ; echo "$iperf_loss_accum/$iperf_loss_div" | bc
+    echo -n "rx-lost/sec mean: " ; calc $iperf_loss_accum/$iperf_loss_div
     echo ""
     iperf_loss_accum="0"
     iperf_loss_div=0
