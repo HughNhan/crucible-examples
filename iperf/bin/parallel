@@ -79,8 +79,8 @@ done
 # Filter to keep only the interested sections TPUT, CPU, LOSS
 for file in $FILES; do
     tmpfile="/tmp/$(basename $file)"
-    # taken lines from line with "TPUT" + 100 more lines
-    awk '/TPUT/{x=NR+100}(NR<=x){print}' $file > $tmpfile
+    # taken lines from line with "TPUT" + 1000 more lines
+    awk '/TPUT/{x=NR+1000}(NR<=x){print}' $file > $tmpfile
     TMPFILES+=$tmpfile
     TMPFILES+=" "
 done

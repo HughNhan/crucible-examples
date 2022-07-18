@@ -2,6 +2,8 @@
 #
 # Usage: regen --l <label>
 #  Re-generate summary by label
+#  cd /home/hnhan/crucible-examples-work/iperf/JOSE/INTRA-HOST
+#  regen.sh --label jose-tue
 #
 
 longopts="label:,help"

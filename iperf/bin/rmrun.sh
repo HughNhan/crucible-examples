@@ -2,6 +2,8 @@
 #
 # Usage: rmrun --l <label>
 #  Remove run-id with specified "label"
+#  cd run-$LABEL-xxx
+#  rmrun.sh --label $LABEL
 #
 
 longopts="label:,help"
