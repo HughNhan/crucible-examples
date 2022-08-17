@@ -11,6 +11,15 @@ do
     echo $run
     # remove ending /
     name=${run::-1}
+    if [ -f  $name.tgz ]; then
+        pwd
+        echo $name.tgz exists. Skip
+        read -p "Delete $name (y/n)? " ans
+        if [  "$ans" == 'y' ]; then
+            rm -fr $name
+        fi
+    fi
+
     tar --force-local -czvf $name.tgz $name
     if [ $? -eq 0 ]; then
         echo "success"

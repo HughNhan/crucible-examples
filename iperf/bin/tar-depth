@@ -1,5 +1,7 @@
 #
-# tar-depth --label <>  --maxdepth <>
+# Usages:
+# tar-depth --label <>  --depth <>
+# tar-depth --label any  --depth <>   <===== any label
 #
 longopts="label:,depth:,help"
 opts=$(getopt -q -o "" --longoptions "$longopts" -n "getopt.sh" -- "$@");
@@ -43,6 +45,10 @@ echo label=$label depth=$depth
 if [ "$label"  == "" ] || [ "$depth" == "" ]; then
     echo $0 "[--label <src> --depth <n>"
     exit
+fi
+
+if [ "$label" == "any" ]; then
+    label=""
 fi
 
 for D in `find . -maxdepth $depth -type d`

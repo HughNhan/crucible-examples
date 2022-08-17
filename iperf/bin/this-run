@@ -75,8 +75,12 @@ result_path=$(realpath /var/lib/crucible/run/latest)
 mv $result_path $DIR/
 pushd $DIR
 
-gen-summary $DIR
-echo tar-result $DIR
+#gen-summary $DIR
+#tar-result $DIR
+
+gen-summary 
+echo tar-result iperf
+
 popd
 # EOF
 
