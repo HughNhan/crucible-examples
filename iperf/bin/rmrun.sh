@@ -48,17 +48,22 @@ echo "LABEL=$LABEL"
 
 NAMES=$(find . -name run-$LABEL\* -print)
 
+echo $NAMES
+
 for dir in $NAMES; do
     if [ -d $dir ]; then
         pushd $dir > /dev/null
-        #pwd
+        pwd
+        echo search  line=$(find . -maxdepth 3 -name result-summary.txt -exec grep run-id {} \; )
         line=$(find . -maxdepth 3 -name result-summary.txt -exec grep run-id {} \; )
         if [ "$line" != "" ];then
             #echo $line | awk -F":" '{print $2}'
             run_id="$(echo $line | awk -F":" '{print $2}')"
+            echo about to: crucible rm --run $run_id
             crucible rm --run $run_id
         fi
         popd > /dev/null
+        rm -fr $dir*
     fi
 done
 

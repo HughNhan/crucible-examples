@@ -201,7 +201,6 @@ function f-gen-summ {
 # Discover bench prefix i.e iperf, uperf, flexran to know what blob to process. It will process "iperf--run-xxxxx"
 bench=""
 while read line; do
-    #echo $line
     bench=$(echo $line |  awk '{if(/crucible.*run/) print $4}')
     if [ "$bench" != "" ]; then
         break
