@@ -1,8 +1,4 @@
 [
-  { "tool": "ovs" },
-  { "tool": "kernel",
-    "params": [ {"arg":"subtools","val":"perf"}, { "arg": "perf-record-opts", "val": "--freq=100 --namespaces --all-cgroups" } ]
-  },
   { "tool": "sysstat" },
   { "tool": "procstat" }
 ]

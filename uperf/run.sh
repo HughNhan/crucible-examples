@@ -4,7 +4,7 @@
 
 # Variables which apply to all test environments
 ################################################
-topo="interhost" # internode = client/server pods on different nodes in ocp/k8s cluster
+topo="intranode" # internode = client/server pods on different nodes in ocp/k8s cluster
                  # intranode = client/server pods on same worker node in ocp/k8s cluster
                  # ingress = client outside (BML host or VM), server inside ocp/k8s cluster
                  # interhost = between two BML hosts/VMs, not k8s/ocp
@@ -24,20 +24,20 @@ max_failures=3 # After this many failed samples the run will quit
             # Note that many tags are auto-generated below
 #mv_params_files=("uperf-mv-params.json.udp.rr" "uperf-mv-params.json.udp.stream") # All benchmark-iterations are built from this file
 #mv_params_files=("uperf-mv-params.json.tcp.rr" "uperf-mv-params.json.tcp.stream") # All benchmark-iterations are built from this file
-mv_params_files=("uperf-mv-params.json.tcp.rr" "uperf-mv-params.json.tcp.stream" "uperf-mv-params.json.udp.rr" "uperf-mv-params.json.udp.stream") # All benchmark-iterations are built from this file
+mv_params_files=("uperf-mv-params.json") # All benchmark-iterations are built from this file
 #mv_params_files=( "uperf-mv-params.json.tcp.stream.ovn-k-hw-offload" "uperf-mv-params.json.tcp.stream.ovn-k-tc") # All benchmark-iterations are built from this file
 
 # Variables for ocp/k8s environments
 ####################################
-num_cpus=60  # A few fewer than the number of *Allocatable* cpus on each of the workers.
+num_cpus=16  # A few fewer than the number of *Allocatable* cpus on each of the workers.
              # as reported by oc describe node/node-name
              # This affects cpu request (and limit for static qos)
              # TODO: this should be automatically calculated.
 pod_qos=burstable # static = guaranteed pod, burstable = default pos qos
-ocphost=admin-host.domain # must be able to ssh without password prompt
-k8susr=kni # Might be "root" or "kni" for some installations
+ocphost=perf176b.perf.lab.eng.bos.redhat.com # must be able to ssh without password prompt
+k8susr=root # Might be "root" or "kni" for some installations
 # Use for SRIOV or comment out for default network
-annotations="`/bin/pwd`/annotations.json" # Use for SRIOV or comment out for default network
+#annotations="`/bin/pwd`/annotations.json" # Use for SRIOV or comment out for default network
                                                 # Must populate this file with correct annotation
   # Use to disable or enable IRQs, comment out if you are not using Performance Addon Operator
 #annotations=`/bin/pwd`/no-irq-annotations.json
@@ -114,7 +114,7 @@ for params_file in ${mv_params_files[@]}; do
 for num_pods in $scale_up_factor; do
     num_clients=`echo "$num_pods * $scale_out_factor" | bc`
     num_servers=$num_clients
-    num_cpus=60  # A few fewer than the number of *Allocatable* cpus on each of the workers.
+    num_cpus=16  # A few fewer than the number of *Allocatable* cpus on each of the workers.
     if [ "$topo" != "interhost" ]; then # Any test involving ocp/k8s
         ssh $k8susr@$ocphost "kubectl get nodes -o json" >nodes.json
         ## NOTE THIS IS REVERSED
