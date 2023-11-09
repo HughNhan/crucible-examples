@@ -1,15 +1,8 @@
 #!/bin/bash
 
-config=$1
-if [ -z "$config" ]; then
-    echo "config file not specified.  Use ./run.sh <your-config-file>"
-    exit 1
-fi
-if [ ! -e $config ]; then
-    echo "Could not find $config, exiting"
-    exit 1
-fi
-. $config
+ocp_host=d19-h25-000-r650.rdu2.scalelab.redhat.com
+num_samples=1
+tags=this_tag:training
 
 if [ -z "$tags" ]; then
     echo "You must define tags in your config file"
@@ -36,7 +29,7 @@ crucible run iperf,uperf\
  --endpoint k8s,user:root,host:$ocp_host,\
 nodeSelector:client-1-7+21-22+27:$pwd/nodeSelector-worker0.json,\
 nodeSelector:client-8-14+30:$pwd/nodeSelector-worker1.json,\
-nodeSelector:client-5-20+23-24+25-26+28-29+31-32:$pwd/nodeSelector-worker2.json,\
+nodeSelector:client-15-20+23-24+25-26+28-29+31-32:$pwd/nodeSelector-worker2.json,\
 nodeSelector:server-28:$pwd/nodeSelector-worker0.json,\
 nodeSelector:server-23+24+29:$pwd/nodeSelector-worker1.json,\
 nodeSelector:server-1-20+21-22+25-26+27+30+31-32:$pwd/nodeSelector-worker2.json,\
